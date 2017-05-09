@@ -3,7 +3,7 @@
 
 g++ -Wall -Werror -ansi -pedantic ../src/main.c -o test
 
-echo "----------"
+echo "test 1"
 str="ls -a; echo hello && rm hello || echo world; exit"
 
 echo ${str}
@@ -12,7 +12,7 @@ echo ${str}
 	sleep 1
 } | ./test
 
-echo "----------"
+echo "test 2"
 str="ls -a; echo world && touch world || echo sucsess; ls &&  exit"
 
 echo ${str}
@@ -21,4 +21,4 @@ echo ${str}
 	sleep 1
 } | ./test
 
-rm hello test
+rm test
