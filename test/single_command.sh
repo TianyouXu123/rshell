@@ -3,7 +3,12 @@
 g++ -Wall -Werror -ansi -pedantic ../src/main.c -o test
 
 echo "----------"
-echo "echo This is a test"
-exit
+str="echo unhappy # this command will print out unhappy; exit # quit"
 
-rm test
+echo ${str}
+{
+	echo ${str}
+	sleep 1
+} | ./test
+
+rm a.out
