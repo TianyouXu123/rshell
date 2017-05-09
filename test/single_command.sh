@@ -3,7 +3,7 @@
 
 g++ -Wall -Werror -ansi -pedantic ../src/main.c -o test
 
-echo "----------"
+echo "test"
 str1="echo hello"
 str2="exit"
 echo ${str}
