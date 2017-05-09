@@ -2,4 +2,4 @@ all: rshell
 
 rshell: src/main.c
 	mkdir bin
-	g++ -Wall -Werror -ansi -pedantic src/main.cpp -o bin/rshell
+	g++ -Wall -Werror -ansi -pedantic src/main.c -o bin/rshell
