@@ -1,7 +1,7 @@
 #!/bin/sh
 #tests commands with comments
 
-g++ -Wall -Werror -ansi -pedantic ../src/main.cpp -o test
+g++ -Wall -Werror -ansi -pedantic ../src/main.c -o test
 
 echo "----------"
 str="echo hello world # this is a comment; exit # quit"
