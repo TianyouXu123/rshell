@@ -21,4 +21,5 @@ echo ${str}
 	sleep 1
 } | ./test
 
+rm world
 rm test
