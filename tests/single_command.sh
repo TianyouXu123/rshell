@@ -1,4 +1,5 @@
 #!/bin/sh
+#tests single commands
 g++ -Wall -Werror -ansi -pedantic ../src/main.c -o test
 
 echo "----------"
