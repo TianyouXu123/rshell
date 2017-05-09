@@ -1,5 +1,6 @@
 #!/bin/sh
 #tests commands with comments
+#tests exit and commands with exit
 
 g++ -Wall -Werror -ansi -pedantic ../src/main.c -o test
 
