@@ -2,7 +2,7 @@
 g++ -Wall -Werror -ansi -pedantic ../src/main.c -o test
 
 echo "----------"
-str1="echo A"
+str1="echo This is a test"
 str2="ls -a"
 str3="exit"
 
