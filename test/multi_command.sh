@@ -4,7 +4,7 @@
 g++ -Wall -Werror -ansi -pedantic ../src/main.c -o test
 
 echo "test 1"
-str="ls -a; echo hello && rm hello || echo world; exit"
+str="ls -a; echo hello || echo world; exit"
 
 echo ${str}
 {
@@ -13,7 +13,7 @@ echo ${str}
 } | ./test
 
 echo "test 2"
-str="ls -a; echo world && touch world || echo sucsess; ls &&  exit"
+str="ls -a; echo world && touch world || echo fail; ls &&  exit"
 
 echo ${str}
 {

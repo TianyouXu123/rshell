@@ -1,221 +1,263 @@
 #include <iostream>
 #include <cstring>
-#include <string>
 #include <vector>
-#include <sys/param.h>
-#include <unistd.h>
+
+#include <sys/param.h> //MAXPATHLEN
+#include <sys/types.h> //processes IDs
+#include <sys/wait.h>
+
+#include <unistd.h> //gethostname, getcwd
 #include <stdlib.h>
 #include <stdio.h>
-#include <sys/types.h>
-#include <sys/wait.h>
 
 using namespace std;
 
-int Find_Connector(const char * cStr, const int start, char & result);
-void Split_Command(string cStr, std::vector<char *> & cmdVector, std::vector<int> & cntVector);
-char * Cut_Comment(char * args);
+//Will use these in the future
+//const char *SEMICO = ";";
+//const char *AND = "&&";
+//const char *OR = "||";
+//const char *TEST = "test";
+//const char *L_PARA = "(";
+//const char *R_PARA = ") ";
+//const char *L_BRAC = "[";
+//const char *R_BRAC = "] ";
 
-int Do_EXEC (char * args);
-int EXEC (char * args[]);
+void Command_Parsing(string Command_string, vector<char*>& Command_Vec, vector<int>& Connector_Vec);
+int Execution_Parsing(char* arguments);
+char* Comment_Parsing(char* arguments);
 
-int main (int argc, char * argv[])
+int Command_Connector(const char* Command_string, const int start, char& result);
+
+int Do_Execution (char* arguments[]);
+
+int main (int argc, char* argv[])
 {
-	char hostname[20];
-	gethostname(hostname,256);
-	char current [MAXPATHLEN];
-        char * currentDir=getcwd(current,MAXPATHLEN);
-	char * username = getlogin();
+	//obtain servername and username
+	char server_name[50];
+	gethostname(server_name, 64);
+	char* username=getlogin();
+	
+	//obtain current working directory
+	char directory[MAXPATHLEN];
+	char* CWD=getcwd(directory,MAXPATHLEN);
 
-	string cmdStr;
-	do
+	string Command_str;
+	bool finish=false;
+	
+	while(!finish)
 	{
-		cout << username << "@" << hostname << currentDir << "$ ";
-		getline (cin, cmdStr);
+		cout<<"["<<username<<"@"<<server_name<<CWD<<"]"<<"$ ";
+		getline(cin, Command_str);
 
-		if (!cmdStr.empty())
+		if (!Command_str.empty())
 		{
-			char * cmdCStr = new char[cmdStr.length () + 1];
-			strcpy (cmdCStr, cmdStr.c_str());
-			cmdCStr[cmdStr.length ()] = '\0';
-
-			std::vector<char *> cmdVector;
-			std::vector<int> cntVector;
-			Split_Command(cmdStr, cmdVector, cntVector);
+			vector<char*> Command_Vec;
+			vector<int> Connector_Vec;
 			
-			//Execute commands
-			int last_status = 0;
-			for (unsigned int i = 0; i < cmdVector.size(); ++i)
+			Command_Parsing(Command_str, Command_Vec, Connector_Vec);
+			
+			int flag = 0;
+			unsigned int VecSize = Command_Vec.size();
+			
+			for (unsigned int i = 0; i < VecSize; ++i)
 			{
-				if (cntVector[i] == 0)							//First cmd or after ';'
+			    //First cmd or after ';'
+				if (Connector_Vec[i] == 0)
 				{
-					last_status = Do_EXEC (cmdVector[i]);
+					flag = Execution_Parsing (Command_Vec[i]);
 				}
-				else if (cntVector[i] == 1 && last_status == 0)	//After '&&'
+				//After '&&'
+				else if (Connector_Vec[i] == 1 && flag == 0)
 				{
-					last_status = Do_EXEC (cmdVector[i]);
+					flag = Execution_Parsing (Command_Vec[i]);
 				}
-				else if (cntVector[i] == 2 && last_status != 0)	//After '||'
+				//After '||'
+				else if (Connector_Vec[i] == 2 && flag != 0)
 				{
-					last_status = Do_EXEC (cmdVector[i]);
+					flag = Execution_Parsing (Command_Vec[i]);
 				}
-				if (last_status == -2)
-                                {
-                                        //Execute cd
-                                        cout << "Executing: cd" << endl;
-                    			char * temp=cmdVector[i];
-                    			char directory [MAXPATHLEN];
-                    			directory[0]='/';
-                    			int j=1;
-                    			for (unsigned int i = 3;i<strlen(temp); i++)
-                              		{
-                        			if(temp[i]==' '){}
-                        			else
-                        			{
-                            				directory[j]=temp[i];
-                            				j++;
-                        			}
-                        		}
-                    			std::cout<<strcat(currentDir,directory)<<std::endl;
-                           
-                    			int rc=1;
-                    			if(rc<0)
-                    			{
-                        			std::cout<<"Error"<<std::endl;
-                    			}
-                              }
+				
+				if (flag == -5)
+				{
+					finish=true;
+				}
+				
+				if (flag == -2)
+                {
+					char* tmp_command=Command_Vec[i];
+					char directory [MAXPATHLEN];
+					directory[0]='/';
+					
+					int index=1;
+					unsigned int StrLen = strlen(tmp_command);
+					for (unsigned int i = 3;i<StrLen; i++)
+	          		{
+		    			if(tmp_command[i]==' '){}
+		    			else
+		    			{
+	        				directory[index]=tmp_command[i];
+	        				index++;
+		    			}
+		    		}
+					cout<<strcat(CWD,directory)<<endl;
+                }
 			}
 		}
-	} while (1);
-
+	}
 	return 0;
 }
 
-int Find_Connector(const char * cStr, const int start, char & result)
+int Execution_Parsing (char* arguments)
 {
-	int i = start;
-	while (cStr[i] != '\0')
+	if (strncmp(arguments, "cd", 2) == 0)
+	    return -2;
+
+	char* tmp_arguments = Comment_Parsing(arguments);
+	vector <char*> arguments_vector;
+	
+	// strtok places a NULL terminator in front of the token, if found 
+	char* arguments_part = strtok (tmp_arguments, " ");
+	
+	while (arguments_part != NULL)
 	{
-		result = cStr[i];
-		if (cStr[i] == ';')
-			return i;
-		else if ((cStr[i] == '&') && (cStr[i + 1] == '&'))
-			return i;
-		else if ((cStr[i] == '|') && (cStr[i + 1] == '|'))
-			return i;
-        else if (cStr[i] == '(')
-            return i;
-        else if ((cStr[i] == 't') && (cStr[i + 1] =='e') && (cStr[i + 2] =='s') && (cStr[i + 3] =='t'))
-            return i;
-        else if ((cStr[i] == ')') && (cStr[i + 1] !='\0'))
-            return i+1;
-        else if (cStr[i] == '[')
-            return i;
-        else if ((cStr[i] == ']') && (cStr[i + 1] !='\0'))
-            return i+1;
-		i++;
+		arguments_vector.push_back (arguments_part);
+		
+    //A second call to strtok using a NULL as the first parameter returns a pointer to the character following the token
+    
+		arguments_part = strtok (NULL, " ");
 	}
-	result = '\0';
-	return -1;
+	arguments_vector.push_back (0);
+	
+	int arguments_size = arguments_vector.size ();
+	char* arguments_result[10];
+	
+	for (int i = 0; i < arguments_size; i++)
+	{
+		arguments_result[i] = arguments_vector[i];
+	}
+	
+	if (strncmp(arguments, "exit", 4) == 0)
+	{
+		cout<<"Goooooode bye!"<<endl;
+		return -5;
+	}
+	
+	return Do_Execution(arguments_result);
 }
 
-void Split_Command(string cStr, std::vector<char *> & cmdVector, std::vector<int> & cntVector)
+void Command_Parsing(string Command_string, vector<char*>& Command_Vec, vector<int>& Connector_Vec)
 {
-	cntVector.push_back(0);
+	Connector_Vec.push_back(0);
+	
 	int i = 0;
 	int j = 0;
+	
 	while (i != -1)
 	{
-		string tmpStr;
-		char tmpResult;
+		string tmp_string;
+		char tmp_Result;
+		
 		int a = 0;
 		int b = 0;
-		j = Find_Connector(cStr.c_str(), i, tmpResult);
+		j = Command_Connector(Command_string.c_str(), i, tmp_Result);
+		
 		if (j == -1)
 		{
 			b = -1;
 		}
-		else if (tmpResult == ';')
+		else if (tmp_Result == ';')
 		{
-			cntVector.push_back(0);
+			Connector_Vec.push_back(0);
 			b = j+2;
 		}
-		else if (tmpResult == '&')
+		else if (tmp_Result == '&')
 		{
-			cntVector.push_back(1);
+			Connector_Vec.push_back(1);
 			a = -1;
 			b = j+3;
 		}
-		else if (tmpResult == '|')
+		else if (tmp_Result == '|')
 		{
-			cntVector.push_back(2);
+			Connector_Vec.push_back(2);
 			a = -1;
 			b = j+3;
 		}
-		tmpStr = cStr.substr(i, j - i + a);
-		char * tmpCStr = new char[tmpStr.length () + 1];
-		strcpy (tmpCStr, tmpStr.c_str());
-		tmpCStr[tmpStr.length ()] = '\0';
-		cmdVector.push_back(tmpCStr);
+		
+		tmp_string = Command_string.substr(i, j - i + a);
+		char* Temp_Command_string = new char[tmp_string.length () + 1];
+		strcpy (Temp_Command_string, tmp_string.c_str());
+		Temp_Command_string[tmp_string.length ()] = '\0';
+		Command_Vec.push_back(Temp_Command_string);
 		i = b;
 	}
 }
 
-char * Cut_Comment(char * args)
+char* Comment_Parsing(char* arguments)
 {
 	int i = 0;
-	while (args[i] != '\0')
+	while (arguments[i] != '\0')
 	{
-		if (args[i] == '#')
+	    //check comment sign here
+		if (arguments[i] == '#')
 		{
-			char * tmp = new char[i+1];
+			char* tmp = new char[i+1];
 			for (int j = 0; j < i; ++j)
 			{
-				tmp[j] = args[j];
+				tmp[j] = arguments[j];
 			}
 			tmp[i] = '\0';
 			return tmp;
 		}
 		i++;
 	}
-	return args;
+	return arguments;
 }
 
-int Do_EXEC (char * args)
+int Command_Connector(const char* Command_string, const int start, char& result)
 {
-	if (strncmp(args, "exit", 4) == 0)
+	int i = start;
+	while (Command_string[i] != '\0')
 	{
-		//Exit program
-		cout << "Executing: exit" << endl;
-		exit(0);
+		result = Command_string[i];
+		
+		//different connector condition
+		bool ifcondition1 = (Command_string[i] == ';');
+		bool ifcondition2 = ((Command_string[i] == '&') && (Command_string[i + 1] == '&'));
+		bool ifcondition3 = ((Command_string[i] == '|') && (Command_string[i + 1] == '|'));
+		bool ifcondition4 = ((Command_string[i] == 't') && (Command_string[i + 1] =='e') && (Command_string[i + 2] =='s') && (Command_string[i + 3] =='t'));
+		bool ifcondition5 = (Command_string[i] == '(');
+		bool ifcondition6 = ((Command_string[i] == ')') && (Command_string[i + 1] !='\0'));
+		bool ifcondition7 = (Command_string[i] == '[');
+		bool ifcondition8 = ((Command_string[i] == ']') && (Command_string[i + 1] !='\0'));
+		
+		if(ifcondition1)
+			return i;
+		else if(ifcondition2)
+			return i;
+		else if(ifcondition3)
+			return i;
+        else if(ifcondition4)
+			return i;
+        else if(ifcondition5)
+			return i;
+        else if(ifcondition6)
+			return i+1;
+        else if(ifcondition7)
+			return i;
+        else if(ifcondition8)
+			return i+1;
+        i++;
 	}
+	result = '\0';
+	return -1;
+}
 
-	if (strncmp(args, "cd", 2) == 0)
-                return -2;
-
-
-	char * tmpARGS = Cut_Comment(args);
-	vector <char *> args_vector;
-	char * pch = strtok (tmpARGS, " ");
-	while (pch != NULL)
-	{
-		args_vector.push_back (pch);
-		pch = strtok (NULL, " ");
-	}
-	args_vector.push_back (0);
-	int args_size = args_vector.size ();
-	char * args_result[10];
-	for (int i = 0; i < args_size; i++)
-	{
-		args_result[i] = args_vector[i];
-	}
+int Do_Execution (char* arguments[])
+{
+	//pid for parent and children
+	pid_t pid;
+	pid_t c_pid;
 	
-	return EXEC(args_result);
-}
-
-int EXEC (char * args[])
-{
-	//Execute the command
-	pid_t c_pid, pid;
 	int status = 0;
 	c_pid = fork ();
 	
@@ -226,20 +268,18 @@ int EXEC (char * args[])
 	}
 	else if (c_pid == 0)
 	{
-		printf ("Executing: %s\n", args[0]);
-		execvp (args[0], args);
-		perror ("Execve Faild");
+		execvp (arguments[0], arguments);
+		perror ("Execution Failed");
 		exit (1);
 	}
 	else if (c_pid > 0)
 	{
-		if ((pid = wait (&status)) < 0)
+		if ((pid = wait(&status)) < 0)
 		{
-			perror ("wait");
+			perror ("Waiting");
 			exit (1);
 		}
 		return status;
 	}
-
 	return status;
 }
