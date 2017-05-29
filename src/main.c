@@ -2,7 +2,6 @@
 #include <cstring>
 #include <vector>
 
-#include <sys/param.h> //MAXPATHLEN
 #include <sys/types.h> //processes IDs
 #include <sys/wait.h>
 
@@ -11,16 +10,6 @@
 #include <stdio.h>
 
 using namespace std;
-
-//Will use these in the future
-//const char *SEMICO = ";";
-//const char *AND = "&&";
-//const char *OR = "||";
-//const char *TEST = "test";
-//const char *L_PARA = "(";
-//const char *R_PARA = ") ";
-//const char *L_BRAC = "[";
-//const char *R_BRAC = "] ";
 
 void Command_Parsing(string Command_string, vector<char*>& Command_Vec, vector<int>& Connector_Vec);
 int Execution_Parsing(char* arguments);
@@ -36,17 +25,13 @@ int main (int argc, char* argv[])
 	char server_name[50];
 	gethostname(server_name, 64);
 	char* username=getlogin();
-	
-	//obtain current working directory
-	char directory[MAXPATHLEN];
-	char* CWD=getcwd(directory,MAXPATHLEN);
 
 	string Command_str;
 	bool finish=false;
 	
 	while(!finish)
 	{
-		cout<<"["<<username<<"@"<<server_name<<CWD<<"]"<<"$ ";
+		cout<<username<<"@"<<server_name<<"$ ";
 		getline(cin, Command_str);
 
 		if (!Command_str.empty())
@@ -61,7 +46,7 @@ int main (int argc, char* argv[])
 			
 			for (unsigned int i = 0; i < VecSize; ++i)
 			{
-			    //First cmd or after ';'
+			    //After ';'; 1st command
 				if (Connector_Vec[i] == 0)
 				{
 					flag = Execution_Parsing (Command_Vec[i]);
@@ -81,26 +66,6 @@ int main (int argc, char* argv[])
 				{
 					finish=true;
 				}
-				
-				if (flag == -2)
-                {
-					char* tmp_command=Command_Vec[i];
-					char directory [MAXPATHLEN];
-					directory[0]='/';
-					
-					int index=1;
-					unsigned int StrLen = strlen(tmp_command);
-					for (unsigned int i = 3;i<StrLen; i++)
-	          		{
-		    			if(tmp_command[i]==' '){}
-		    			else
-		    			{
-	        				directory[index]=tmp_command[i];
-	        				index++;
-		    			}
-		    		}
-					cout<<strcat(CWD,directory)<<endl;
-                }
 			}
 		}
 	}
@@ -108,10 +73,7 @@ int main (int argc, char* argv[])
 }
 
 int Execution_Parsing (char* arguments)
-{
-	if (strncmp(arguments, "cd", 2) == 0)
-	    return -2;
-
+{ 
 	char* tmp_arguments = Comment_Parsing(arguments);
 	vector <char*> arguments_vector;
 	
@@ -138,7 +100,7 @@ int Execution_Parsing (char* arguments)
 	
 	if (strncmp(arguments, "exit", 4) == 0)
 	{
-		cout<<"Goooooode bye!"<<endl;
+		cout<<"Execute: exit"<<endl;
 		return -5;
 	}
 	
@@ -216,36 +178,33 @@ char* Comment_Parsing(char* arguments)
 int Command_Connector(const char* Command_string, const int start, char& result)
 {
 	int i = start;
+	
+	//different connector condition
+	
+	bool SEMICO = ((Command_string[i] == ';') && (Command_string[i + 1] == ' '));
+	bool LEFT_PARE = (Command_string[i] == '(');
+	bool RIGHT_PARE = (Command_string[i] == ')');
+	bool AND = ((Command_string[i - 1] == ' ') && (Command_string[i] == '&') && (Command_string[i + 1] == '&') && (Command_string[i + 2] == ' '));
+	bool OR = ((Command_string[i - 1] == ' ') && (Command_string[i] == '|') && (Command_string[i + 1] == '|') && (Command_string[i + 2] == ' '));
+		
+	if (LEFT_PARE)
+	{
+	    i++;
+	    while(!RIGHT_PARE)
+	    {
+	        i++;
+	    }
+	}
 	while (Command_string[i] != '\0')
 	{
 		result = Command_string[i];
 		
-		//different connector condition
-		bool ifcondition1 = (Command_string[i] == ';');
-		bool ifcondition2 = ((Command_string[i] == '&') && (Command_string[i + 1] == '&'));
-		bool ifcondition3 = ((Command_string[i] == '|') && (Command_string[i + 1] == '|'));
-		bool ifcondition4 = ((Command_string[i] == 't') && (Command_string[i + 1] =='e') && (Command_string[i + 2] =='s') && (Command_string[i + 3] =='t'));
-		bool ifcondition5 = (Command_string[i] == '(');
-		bool ifcondition6 = ((Command_string[i] == ')') && (Command_string[i + 1] !='\0'));
-		bool ifcondition7 = (Command_string[i] == '[');
-		bool ifcondition8 = ((Command_string[i] == ']') && (Command_string[i + 1] !='\0'));
-		
-		if(ifcondition1)
+		if(SEMICO)
 			return i;
-		else if(ifcondition2)
+		else if(AND)
 			return i;
-		else if(ifcondition3)
+		else if(OR)
 			return i;
-        else if(ifcondition4)
-			return i;
-        else if(ifcondition5)
-			return i;
-        else if(ifcondition6)
-			return i+1;
-        else if(ifcondition7)
-			return i;
-        else if(ifcondition8)
-			return i+1;
         i++;
 	}
 	result = '\0';
@@ -268,6 +227,7 @@ int Do_Execution (char* arguments[])
 	}
 	else if (c_pid == 0)
 	{
+	        cout<<"Execute: "<<arguments[0];
 		execvp (arguments[0], arguments);
 		perror ("Execution Failed");
 		exit (1);
