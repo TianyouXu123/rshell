@@ -2,7 +2,6 @@
 #include <cstring>
 #include <vector>
 
-#include <sys/param.h> //MAXPATHLEN
 #include <sys/types.h> //processes IDs
 #include <sys/wait.h>
 
