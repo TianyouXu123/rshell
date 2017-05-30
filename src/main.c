@@ -79,37 +79,98 @@ bool Command_Flag(string Command_str)
 
 int Execution_Parsing (char* arguments)
 { 
-	char* tmp_arguments = Comment_Parsing(arguments);
-	vector <char*> arguments_vector;
-	
-	// strtok places a NULL terminator in front of the token, if found 
-	char* arguments_part = strtok (tmp_arguments, " ");
-	
-	while (arguments_part != NULL)
-	{
-		arguments_vector.push_back (arguments_part);
-		
-    //A second call to strtok using a NULL as the first parameter returns a pointer to the character following the token
     
-		arguments_part = strtok (NULL, " ");
-	}
-	arguments_vector.push_back (0);
-	
-	int arguments_size = arguments_vector.size ();
-	char* arguments_result[10];
-	
-	for (int i = 0; i < arguments_size; i++)
-	{
-		arguments_result[i] = arguments_vector[i];
-	}
-	
-	if (strncmp(arguments, "exit", 4) == 0)
+    if (strncmp(arguments, "exit", 4) == 0)
 	{
 		cout<<"Execute: exit"<<endl;
 		return -5;
 	}
-	
-	return Do_Execution(arguments_result);
+	else if (strncmp(arguments, "(", 1) == 0)
+    {
+        int temp_size = strlen(arguments)-2;
+        char* tmp_arguments = new char[temp_size];
+        for (int i = 0; i < temp_size; ++i)
+        {
+            tmp_arguments[i] = arguments[i+1];
+        }
+        return Command_Flag(tmp_arguments);
+    }
+    else if (strncmp(arguments, "[", 1) == 0 || strncmp(arguments, "test", 4) == 0)
+    {
+        char* tmp_arguments = Comment_Parsing(arguments);
+	    vector <char*> arguments_vector;
+	    
+        // strtok places a NULL terminator in front of the token, if found 
+	    char* arguments_part = strtok (tmp_arguments, " ");
+	    
+        while (arguments_part != NULL)
+        {
+            //push test command if [ is found
+            if (strncmp(arguments_part, "[", 1) == 0)
+            {
+                char temp[4] = {'t','e','s','t'};
+                arguments_vector.push_back(temp);
+            }
+            //ignore if ] is found
+            else if (strncmp(arguments_part, "]", 1) != 0)
+            {
+                arguments_vector.push_back (arguments_part);
+            }
+            
+            //A second call to strtok using a NULL as the first parameter returns a pointer to the character following the token
+            arguments_part = strtok (NULL, " ");
+        }
+        arguments_vector.push_back (0);
+        //determine checking flags
+        if (strncmp(arguments_vector[1], "-e", 2) != 0 && strncmp(arguments_vector[1], "-f", 2) != 0 && strncmp(arguments_vector[1], "-d", 2) != 0 )
+        {
+            char temp[2] = {'-','e'};
+            vector<char*>::iterator it;
+            it = arguments_vector.begin();
+            it++;
+            arguments_vector.insert(it, temp);
+        }
+        
+        int arguments_size = arguments_vector.size ();
+        char* arguments_result[10];
+        for (int i = 0; i < arguments_size; i++)
+        {
+            arguments_result[i] = arguments_vector[i];
+        }
+        if (Do_Execution(arguments_result) == 0)
+        {
+            cout<<"(True)"<<endl;
+        }
+        else
+        {
+            cout<<"(False)"<<endl;
+        }
+        return Do_Execution(arguments_result);
+    }
+    else
+    {
+        char* tmp_arguments = Comment_Parsing(arguments);
+        vector<char*> arguments_vector;
+        
+        char* arguments_part = strtok (tmp_arguments, " ");
+        
+        while (arguments_part != NULL)
+        {
+            arguments_vector.push_back (arguments_part);
+            arguments_part = strtok (NULL, " ");
+        }
+        arguments_vector.push_back (0);
+        
+        int arguments_size = arguments_vector.size ();
+        char * arguments_result[10];
+        
+        for (int i = 0; i < arguments_size; i++)
+        {
+            arguments_result[i] = arguments_vector[i];
+        }
+        
+        return Do_Execution(arguments_result);
+    }
 }
 
 void Command_Parsing(string Command_string, vector<char*>& Command_Vec, vector<int>& Connector_Vec)
@@ -216,7 +277,7 @@ int Command_Connector(const char* Command_string, const int start, char& result)
 	return -1;
 }
 
-int Do_Execution (char* arguments[])
+int Do_Execution(char* arguments[])
 {
 	//pid for parent and children
 	pid_t pid;
