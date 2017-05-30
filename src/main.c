@@ -11,6 +11,7 @@
 
 using namespace std;
 
+bool Command_Flag(string Command_str);
 void Command_Parsing(string Command_string, vector<char*>& Command_Vec, vector<int>& Connector_Vec);
 int Execution_Parsing(char* arguments);
 char* Comment_Parsing(char* arguments);
@@ -33,43 +34,47 @@ int main (int argc, char* argv[])
 	{
 		cout<<username<<"@"<<server_name<<"$ ";
 		getline(cin, Command_str);
+        finish = Command_Flag(Command_str);
+	}
+	return 0;
+}
 
-		if (!Command_str.empty())
+bool Command_Flag(string Command_str)
+{
+    if (!Command_str.empty())
+	{
+		vector<char*> Command_Vec;
+		vector<int> Connector_Vec;
+		
+		Command_Parsing(Command_str, Command_Vec, Connector_Vec);
+		
+		int flag = 0;
+		unsigned int VecSize = Command_Vec.size();
+		
+		for (unsigned int i = 0; i < VecSize; ++i)
 		{
-			vector<char*> Command_Vec;
-			vector<int> Connector_Vec;
-			
-			Command_Parsing(Command_str, Command_Vec, Connector_Vec);
-			
-			int flag = 0;
-			unsigned int VecSize = Command_Vec.size();
-			
-			for (unsigned int i = 0; i < VecSize; ++i)
+		    //After ';'; 1st command
+			if (Connector_Vec[i] == 0)
 			{
-			    //After ';'; 1st command
-				if (Connector_Vec[i] == 0)
-				{
-					flag = Execution_Parsing (Command_Vec[i]);
-				}
-				//After '&&'
-				else if (Connector_Vec[i] == 1 && flag == 0)
-				{
-					flag = Execution_Parsing (Command_Vec[i]);
-				}
-				//After '||'
-				else if (Connector_Vec[i] == 2 && flag != 0)
-				{
-					flag = Execution_Parsing (Command_Vec[i]);
-				}
-				
-				if (flag == -5)
-				{
-					finish=true;
-				}
+				flag = Execution_Parsing (Command_Vec[i]);
+			}
+			//After '&&'
+			else if (Connector_Vec[i] == 1 && flag == 0)
+			{
+				flag = Execution_Parsing (Command_Vec[i]);
+			}
+			//After '||'
+			else if (Connector_Vec[i] == 2 && flag != 0)
+			{
+				flag = Execution_Parsing (Command_Vec[i]);
+			}
+			if (flag == -5)
+			{
+				return true;
 			}
 		}
 	}
-	return 0;
+	return false;
 }
 
 int Execution_Parsing (char* arguments)
