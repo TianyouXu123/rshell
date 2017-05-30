@@ -49,9 +49,9 @@ bool Command_Flag(string Command_str)
 		Command_Parsing(Command_str, Command_Vec, Connector_Vec);
 		
 		int flag = 0;
-		unsigned int VecSize = Command_Vec.size();
+		int VecSize = Command_Vec.size();
 		
-		for (unsigned int i = 0; i < VecSize; ++i)
+		for (int i = 0; i < VecSize; ++i)
 		{
 		    //After ';'; 1st command
 			if (Connector_Vec[i] == 0)
@@ -247,11 +247,11 @@ int Command_Connector(const char* Command_string, const int start, char& result)
 	
 	//different connector condition
 	
-	bool SEMICO = ((Command_string[i] == ';') && (Command_string[i + 1] == ' '));
 	bool LEFT_PARE = (Command_string[i] == '(');
 	bool RIGHT_PARE = (Command_string[i] == ')');
+	/*bool SEMICO = ((Command_string[i] == ';') && (Command_string[i + 1] == ' '));
 	bool AND = ((Command_string[i - 1] == ' ') && (Command_string[i] == '&') && (Command_string[i + 1] == '&') && (Command_string[i + 2] == ' '));
-	bool OR = ((Command_string[i - 1] == ' ') && (Command_string[i] == '|') && (Command_string[i + 1] == '|') && (Command_string[i + 2] == ' '));
+	bool OR = ((Command_string[i - 1] == ' ') && (Command_string[i] == '|') && (Command_string[i + 1] == '|') && (Command_string[i + 2] == ' '));*/
 		
 	if (LEFT_PARE)
 	{
@@ -261,7 +261,7 @@ int Command_Connector(const char* Command_string, const int start, char& result)
 	        i++;
 	    }
 	}
-	while (Command_string[i] != '\0')
+	/*while (Command_string[i] != '\0')
 	{
 		result = Command_string[i];
 		
@@ -272,7 +272,18 @@ int Command_Connector(const char* Command_string, const int start, char& result)
 		else if(OR)
 			return i;
         i++;
-	}
+	}*/
+	while (Command_string[i] != '\0')
+    {
+        result = Command_string[i];
+        if ((Command_string[i] == ';') && (Command_string[i + 1] == ' '))
+            return i;
+        else if ((Command_string[i - 1] == ' ') && (Command_string[i] == '&') && (Command_string[i + 1] == '&') && (Command_string[i + 2] == ' '))
+            return i;
+        else if ((Command_string[i - 1] == ' ') && (Command_string[i] == '|') && (Command_string[i + 1] == '|') && (Command_string[i + 2] == ' '))
+            return i;
+        i++;
+    }
 	result = '\0';
 	return -1;
 }
