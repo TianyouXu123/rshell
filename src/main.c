@@ -232,7 +232,7 @@ int Do_Execution (char* arguments[])
 	}
 	else if (c_pid == 0)
 	{
-	    printf ("Executing: %s\n", arguments[0]);
+	    printf ("Execute: %s\n", arguments[0]);
 		execvp (arguments[0], arguments);
 		perror ("Execution Failed");
 		exit (1);
