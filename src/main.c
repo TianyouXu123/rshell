@@ -137,8 +137,7 @@ int Execution_Parsing (char* arguments)
         {
             arguments_result[i] = arguments_vector[i];
         }
-        int test_result = Do_Execution(arguments_result);
-        if (test_result == 0)
+        if (Do_Execution(arguments_result) == 0)
         {
             cout<<"(True)"<<endl;
         }
