@@ -137,7 +137,8 @@ int Execution_Parsing (char* arguments)
         {
             arguments_result[i] = arguments_vector[i];
         }
-        if (Do_Execution(arguments_result) == 0)
+        int test_result = Do_Execution(arguments_result);
+        if (test_result == 0)
         {
             cout<<"(True)"<<endl;
         }
@@ -247,11 +248,11 @@ int Command_Connector(const char* Command_string, const int start, char& result)
 	
 	//different connector condition
 	
-	bool LEFT_PARE = (Command_string[i] == '(');
+	/*bool LEFT_PARE = (Command_string[i] == '(');
 	bool RIGHT_PARE = (Command_string[i] == ')');
-	/*bool SEMICO = ((Command_string[i] == ';') && (Command_string[i + 1] == ' '));
+	bool SEMICO = ((Command_string[i] == ';') && (Command_string[i + 1] == ' '));
 	bool AND = ((Command_string[i - 1] == ' ') && (Command_string[i] == '&') && (Command_string[i + 1] == '&') && (Command_string[i + 2] == ' '));
-	bool OR = ((Command_string[i - 1] == ' ') && (Command_string[i] == '|') && (Command_string[i + 1] == '|') && (Command_string[i + 2] == ' '));*/
+	bool OR = ((Command_string[i - 1] == ' ') && (Command_string[i] == '|') && (Command_string[i + 1] == '|') && (Command_string[i + 2] == ' '));
 		
 	if (LEFT_PARE)
 	{
@@ -261,7 +262,7 @@ int Command_Connector(const char* Command_string, const int start, char& result)
 	        i++;
 	    }
 	}
-	/*while (Command_string[i] != '\0')
+	while (Command_string[i] != '\0')
 	{
 		result = Command_string[i];
 		
@@ -273,6 +274,14 @@ int Command_Connector(const char* Command_string, const int start, char& result)
 			return i;
         i++;
 	}*/
+	if (Command_string[i] == '(')
+	{
+	    i++;
+	    while(Command_string[i] != ')')
+	    {
+	        i++;
+	    }
+	}
 	while (Command_string[i] != '\0')
     {
         result = Command_string[i];
@@ -304,7 +313,7 @@ int Do_Execution(char* arguments[])
 	}
 	else if (c_pid == 0)
 	{
-	    printf ("Execute: %s\n", arguments[0]);
+	    printf ("Execute %s\n", arguments[0]);
 		execvp (arguments[0], arguments);
 		perror ("Execution Failed");
 		exit (1);
