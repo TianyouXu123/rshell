@@ -3,7 +3,7 @@
 
 g++ -Wall -Werror -ansi -pedantic ../src/main.c -o test
 
-echo "test"
+echo "commented_command test:"
 str="echo hello world # this is a comment; exit"
 
 echo ${str}
