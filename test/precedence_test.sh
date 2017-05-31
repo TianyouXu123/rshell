@@ -1,11 +1,10 @@
 #!/bin/sh
-#tests single commands
 
 g++ -Wall -Werror -ansi -pedantic ../src/main.c -o test
 
-echo "test command test:"
+echo "precedence_test:"
 
-str="test -e test/test_test.sh && echo "File found!"; [ -e test/123.txt ] || echo "File not found!"; exit"
+str="echo A && echo B || echo C && echo D; echo A && echo B || (echo C && echo D || echo E); exit"
 echo ${str}
 {
 	echo ${str}
