@@ -11,33 +11,6 @@
 
 using namespace std;
 
-  /*bool LEFT_PARE = (Command_string[i] == '(');
-	bool RIGHT_PARE = (Command_string[i] == ')');
-	bool SEMICO = ((Command_string[i] == ';') && (Command_string[i + 1] == ' '));
-	bool AND = ((Command_string[i - 1] == ' ') && (Command_string[i] == '&') && (Command_string[i + 1] == '&') && (Command_string[i + 2] == ' '));
-	bool OR = ((Command_string[i - 1] == ' ') && (Command_string[i] == '|') && (Command_string[i + 1] == '|') && (Command_string[i + 2] == ' '));
-		
-	if (LEFT_PARE)
-	{
-	    i++;
-	    while(!RIGHT_PARE)
-	    {
-	        i++;
-	    }
-	}
-	while (Command_string[i] != '\0')
-	{
-		result = Command_string[i];
-		
-		if(SEMICO)
-			return i;
-		else if(AND)
-			return i;
-		else if(OR)
-			return i;
-        i++;
-	}*/
-
 bool Command_Flag(string Command_str);
 void Command_Parsing(string Command_string, vector<char*>& Command_Vec, vector<int>& Connector_Vec);
 int Execution_Parsing(char* arguments);
