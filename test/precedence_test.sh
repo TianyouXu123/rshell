@@ -3,22 +3,24 @@
 g++ -Wall -Werror -ansi -pedantic ../src/main.c -o test
 
 echo "precedence_test:"
-str1="echo A && echo B || echo C && echo D"
-str2="echo A && echo B || (echo C && echo D || echo E)"
-str3="exit"
-echo ${str1}
+str="echo A && echo B || echo C && echo D"
+echo ${str}
 {
-	echo ${str1}
+	echo ${str}
 	sleep 1
 } | ./test
-echo ${str2}
+
+str="echo A && echo B || (echo C && echo D || echo E)"
+echo ${str}
 {
-	echo ${str2}
+	echo ${str}
 	sleep 1
 } | ./test
-echo ${str3}
+
+str="exit"
+echo ${str}
 {
-	echo ${str3}
+	echo ${str}
 	sleep 1
 } | ./test
 
