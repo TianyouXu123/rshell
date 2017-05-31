@@ -11,14 +11,49 @@
 
 using namespace std;
 
+  /*bool LEFT_PARE = (Command_string[i] == '(');
+	bool RIGHT_PARE = (Command_string[i] == ')');
+	bool SEMICO = ((Command_string[i] == ';') && (Command_string[i + 1] == ' '));
+	bool AND = ((Command_string[i - 1] == ' ') && (Command_string[i] == '&') && (Command_string[i + 1] == '&') && (Command_string[i + 2] == ' '));
+	bool OR = ((Command_string[i - 1] == ' ') && (Command_string[i] == '|') && (Command_string[i + 1] == '|') && (Command_string[i + 2] == ' '));
+		
+	if (LEFT_PARE)
+	{
+	    i++;
+	    while(!RIGHT_PARE)
+	    {
+	        i++;
+	    }
+	}
+	while (Command_string[i] != '\0')
+	{
+		result = Command_string[i];
+		
+		if(SEMICO)
+			return i;
+		else if(AND)
+			return i;
+		else if(OR)
+			return i;
+        i++;
+	}*/
+
 bool Command_Flag(string Command_str);
 void Command_Parsing(string Command_string, vector<char*>& Command_Vec, vector<int>& Connector_Vec);
 int Execution_Parsing(char* arguments);
 char* Comment_Parsing(char* arguments);
 
-int Command_Connector(const char* Command_string, const int start, char& result);
+int Do_Execution(char* arguments[]);
 
-int Do_Execution (char* arguments[]);
+//Command Connectors' Conditions
+
+bool LEFT_PARE(const char* Command_string, int index);
+bool RIGHT_PARE(const char* Command_string, int index);
+bool SEMICO(const char* Command_string, int index);
+bool AND(const char* Command_string, int index);
+bool OR(const char* Command_string, int index);
+
+int Command_Connector(const char* Command_string, const int start, char& result);
 
 int main (int argc, char* argv[])
 {
@@ -39,6 +74,7 @@ int main (int argc, char* argv[])
 	return 0;
 }
 
+//simplify main function return a value to determine whtether the Rshell is terminated or not.
 bool Command_Flag(string Command_str)
 {
     if (!Command_str.empty())
@@ -77,6 +113,7 @@ bool Command_Flag(string Command_str)
 	return false;
 }
 
+//split different commands and return flags for executions.
 int Execution_Parsing (char* arguments)
 { 
     
@@ -173,6 +210,8 @@ int Execution_Parsing (char* arguments)
     }
 }
 
+
+//recognize, parse command.
 void Command_Parsing(string Command_string, vector<char*>& Command_Vec, vector<int>& Connector_Vec)
 {
 	Connector_Vec.push_back(0);
@@ -241,42 +280,59 @@ char* Comment_Parsing(char* arguments)
 	return arguments;
 }
 
+bool LEFT_PARE(const char* Command_string, int index)
+{
+	if (Command_string[index] == '(')
+	{
+		return true;
+	}
+	return false;
+}
+
+bool RIGHT_PARE(const char* Command_string, int index)
+{
+	if (Command_string[index] == ')')
+	{
+		return true;
+	}
+	return false;
+}
+
+bool SEMICO(const char* Command_string, int index)
+{
+	if ((Command_string[index] == ';') && (Command_string[index + 1] == ' '))
+	{
+		return true;
+	}
+	return false;
+}
+
+bool AND(const char* Command_string, int index)
+{
+	if ((Command_string[index - 1] == ' ') && (Command_string[index] == '&') && (Command_string[index + 1] == '&') && (Command_string[index + 2] == ' '))
+	{
+		return true;
+	}
+	return false;
+}
+
+bool OR(const char* Command_string, int index)
+{
+	if ((Command_string[index - 1] == ' ') && (Command_string[index] == '|') && (Command_string[index + 1] == '|') && (Command_string[index + 2] == ' '))
+	{
+		return true;
+	}
+	return false;
+}
+
 int Command_Connector(const char* Command_string, const int start, char& result)
 {
 	int i = start;
 	
-	//different connector condition
-	
-	/*bool LEFT_PARE = (Command_string[i] == '(');
-	bool RIGHT_PARE = (Command_string[i] == ')');
-	bool SEMICO = ((Command_string[i] == ';') && (Command_string[i + 1] == ' '));
-	bool AND = ((Command_string[i - 1] == ' ') && (Command_string[i] == '&') && (Command_string[i + 1] == '&') && (Command_string[i + 2] == ' '));
-	bool OR = ((Command_string[i - 1] == ' ') && (Command_string[i] == '|') && (Command_string[i + 1] == '|') && (Command_string[i + 2] == ' '));
-		
-	if (LEFT_PARE)
+	if (LEFT_PARE(Command_string, i))
 	{
 	    i++;
-	    while(!RIGHT_PARE)
-	    {
-	        i++;
-	    }
-	}
-	while (Command_string[i] != '\0')
-	{
-		result = Command_string[i];
-		
-		if(SEMICO)
-			return i;
-		else if(AND)
-			return i;
-		else if(OR)
-			return i;
-        i++;
-	}*/
-	if (Command_string[i] == '(')
-	{
-	    i++;
-	    while(Command_string[i] != ')')
+	    while(!RIGHT_PARE(Command_string, i))
 	    {
 	        i++;
 	    }
@@ -284,11 +340,11 @@ int Command_Connector(const char* Command_string, const int start, char& result)
 	while (Command_string[i] != '\0')
     {
         result = Command_string[i];
-        if ((Command_string[i] == ';') && (Command_string[i + 1] == ' '))
+        if (SEMICO(Command_string, i))
             return i;
-        else if ((Command_string[i - 1] == ' ') && (Command_string[i] == '&') && (Command_string[i + 1] == '&') && (Command_string[i + 2] == ' '))
+        else if (AND(Command_string, i))
             return i;
-        else if ((Command_string[i - 1] == ' ') && (Command_string[i] == '|') && (Command_string[i + 1] == '|') && (Command_string[i + 2] == ' '))
+        else if (OR(Command_string, i))
             return i;
         i++;
     }
@@ -296,6 +352,7 @@ int Command_Connector(const char* Command_string, const int start, char& result)
 	return -1;
 }
 
+//have pid objects for processing executions.
 int Do_Execution(char* arguments[])
 {
 	//pid for parent and children
