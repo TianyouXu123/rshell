@@ -3,7 +3,7 @@
 g++ -Wall -Werror -ansi -pedantic ../src/main.c -o test
 
 echo "input_redirect_test:"
-str="cat < test/test.txt && exit"
+str="cat < test.txt && exit"
 
 echo ${str}
 {
