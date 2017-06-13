@@ -201,17 +201,15 @@ int Input_Output_Redirect(char* arguments)
 	
 	if(fp==NULL)
 	{
-		cout<<"Failed to pop"<<endl;
+		cout<<"Failed to popen"<<endl;
 		return -5;
 	}
-
-	int result_size=strlen(result_buffer);
 	
 	while(fgets(result_buffer,sizeof(result_buffer),fp)!=NULL)
 	{
-		if(result_buffer[result_size-1]=='\n')
+		if(result_buffer[strlen(result_buffer)-1]=='\n')
 		{
-			result_buffer[result_size-1]='\0';
+			result_buffer[strlen(result_buffer)-1]='\0';
 		}
 		printf("%s\n",result_buffer);
 	}
