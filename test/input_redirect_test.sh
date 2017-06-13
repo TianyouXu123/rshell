@@ -7,8 +7,8 @@ str="cat < test/test.txt && exit"
 
 echo ${str}
 {
-        echo ${str}
-	sleep 1
+     echo ${str}
+     sleep 1
 } | ./test
 
 rm test
