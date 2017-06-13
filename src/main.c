@@ -354,7 +354,11 @@ bool REDIRE(char * arguments)
 	{
 		if((arguments[i] == ' ') && (arguments[i + 1] == '<') && (arguments[i + 2] == ' '))
 			return true;
+		else if((arguments[i] == ' ') && (arguments[i + 1] == '>') && (arguments[i + 2] == ' '))
+			return true;
 		else if((arguments[i] == ' ') && (arguments[i + 1] == '<') && (arguments[i + 2] == '<') && (arguments[i + 3] == ' '))
+			return true;
+		else if((arguments[i] == ' ') && (arguments[i + 1] == '>') && (arguments[i + 2] == '>') && (arguments[i + 3] == ' '))
 			return true;
 		else if((arguments[i] == ' ') && (arguments[i + 1] == '|') && (arguments[i + 2] == ' '))
 			return true;
