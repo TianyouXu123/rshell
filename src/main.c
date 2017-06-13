@@ -13,9 +13,9 @@
 using namespace std;
 
 bool Command_Flag(string Command_str);
-int Do_Redirection(char* args);
 void Command_Parsing(string Command_string, vector<char*>& Command_Vec, vector<int>& Connector_Vec);
 int Execution_Parsing(char* arguments);
+int Input_Output_Redirect(char* arguments);
 char* Comment_Parsing(char* arguments);
 
 int Do_Execution(char* arguments[]);
@@ -90,46 +90,6 @@ bool Command_Flag(string Command_str)
 	return false;
 }
 
-int Do_Redirection(char* args)
-{
-	int rc = 0;
-	FILE *fp;
-
-	char result_buf[1024];
-
-	//Opened pipe to exe commands
-	fp=popen(args,"r");
-	if(fp==NULL)
-	{
-		cout<<"popen fail"<<endl;
-		printf("popen fail");
-		exit(1);
-		return -1;
-	}
-	//Print result output
-	while(fgets(result_buf,sizeof(result_buf),fp)!=NULL)
-	{
-		if(result_buf[strlen(result_buf)-1]=='\n')
-		{
-			result_buf[strlen(result_buf)-1]='\0';
-		}
-		printf("%s\n",result_buf);
-	}
-
-	rc=pclose(fp);
-
-	if(rc==-1)
-	{
-		cout<<"fp close fail"<<endl;
-		exit(1);
-		return -1;
-	}
-	else
-	{
-		return 0;
-	}
-}
-
 //split different commands and return flags for executions.
 int Execution_Parsing (char* arguments)
 { 
@@ -141,7 +101,7 @@ int Execution_Parsing (char* arguments)
 	}
 	else if (REDIRE(arguments))
 	{
-		return Do_Redirection(arguments);
+		return Input_Output_Redirect(arguments);
 	}
 	else if (strncmp(arguments, "(", 1) == 0)
     {
@@ -231,6 +191,43 @@ int Execution_Parsing (char* arguments)
     }
 }
 
+int Input_Output_Redirect(char* arguments)
+{
+	FILE* fp;
+
+	char result_buffer[1024];
+
+	fp=popen(arguments,"r");
+	
+	if(fp==NULL)
+	{
+		cout<<"Failed to pop"<<endl;
+		return -5;
+	}
+
+	int result_size=strlen(result_buffer);
+	
+	while(fgets(result_buffer,sizeof(result_buffer),fp)!=NULL)
+	{
+		if(result_buffer[result_size-1]=='\n')
+		{
+			result_buffer[result_size-1]='\0';
+		}
+		printf("%s\n",result_buffer);
+	}
+
+	int close_flag=pclose(fp);
+
+	if(close_flag==-1)
+	{
+		cout<<"Failed to close fp"<<endl;
+		return -5;
+	}
+	else
+	{
+		return 0;
+	}
+}
 
 //recognize, parse command.
 void Command_Parsing(string Command_string, vector<char*>& Command_Vec, vector<int>& Connector_Vec)
@@ -355,8 +352,6 @@ bool REDIRE(char * arguments)
 		if((arguments[i] == ' ') && (arguments[i + 1] == '<') && (arguments[i + 2] == ' '))
 			return true;
 		else if((arguments[i] == ' ') && (arguments[i + 1] == '>') && (arguments[i + 2] == ' '))
-			return true;
-		else if((arguments[i] == ' ') && (arguments[i + 1] == '<') && (arguments[i + 2] == '<') && (arguments[i + 3] == ' '))
 			return true;
 		else if((arguments[i] == ' ') && (arguments[i + 1] == '>') && (arguments[i + 2] == '>') && (arguments[i + 3] == ' '))
 			return true;
