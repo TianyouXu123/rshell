@@ -8,10 +8,12 @@
 #include <unistd.h> //gethostname, getcwd
 #include <stdlib.h>
 #include <stdio.h>
+#include <fcntl.h> //FILE type
 
 using namespace std;
 
 bool Command_Flag(string Command_str);
+int Do_Redirection(char* args);
 void Command_Parsing(string Command_string, vector<char*>& Command_Vec, vector<int>& Connector_Vec);
 int Execution_Parsing(char* arguments);
 char* Comment_Parsing(char* arguments);
@@ -25,6 +27,8 @@ bool RIGHT_PARE(const char* Command_string, int index);
 bool SEMICO(const char* Command_string, int index);
 bool AND(const char* Command_string, int index);
 bool OR(const char* Command_string, int index);
+
+bool REDIRE(char* arguments);
 
 int Command_Connector(const char* Command_string, const int start, char& result);
 
@@ -86,6 +90,46 @@ bool Command_Flag(string Command_str)
 	return false;
 }
 
+int Do_Redirection(char* args)
+{
+	int rc = 0;
+	FILE *fp;
+
+	char result_buf[1024];
+
+	//Opened pipe to exe commands
+	fp=popen(args,"r");
+	if(fp==NULL)
+	{
+		cout<<"popen fail"<<endl;
+		printf("popen fail");
+		exit(1);
+		return -1;
+	}
+	//Print result output
+	while(fgets(result_buf,sizeof(result_buf),fp)!=NULL)
+	{
+		if(result_buf[strlen(result_buf)-1]=='\n')
+		{
+			result_buf[strlen(result_buf)-1]='\0';
+		}
+		printf("%s\n",result_buf);
+	}
+
+	rc=pclose(fp);
+
+	if(rc==-1)
+	{
+		cout<<"fp close fail"<<endl;
+		exit(1);
+		return -1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
 //split different commands and return flags for executions.
 int Execution_Parsing (char* arguments)
 { 
@@ -94,6 +138,10 @@ int Execution_Parsing (char* arguments)
 	{
 		cout<<"Execute: exit"<<endl;
 		return -5;
+	}
+	else if (REDIRE(arguments))
+	{
+		return Do_Redirection(arguments);
 	}
 	else if (strncmp(arguments, "(", 1) == 0)
     {
@@ -294,6 +342,26 @@ bool OR(const char* Command_string, int index)
 	if ((Command_string[index - 1] == ' ') && (Command_string[index] == '|') && (Command_string[index + 1] == '|') && (Command_string[index + 2] == ' '))
 	{
 		return true;
+	}
+	return false;
+}
+
+bool REDIRE(char * arguments)
+{
+	int arguments_size=strlen(arguments);
+	
+	for(int i=0; i<arguments_size; ++i)
+	{
+		if((arguments[i] == ' ') && (arguments[i + 1] == '<') && (arguments[i + 2] == ' '))
+			return true;
+		else if((arguments[i] == ' ') && (arguments[i + 1] == '>') && (arguments[i + 2] == ' '))
+			return true;
+		else if((arguments[i] == ' ') && (arguments[i + 1] == '<') && (arguments[i + 2] == '<') && (arguments[i + 3] == ' '))
+			return true;
+		else if((arguments[i] == ' ') && (arguments[i + 1] == '>') && (arguments[i + 2] == '>') && (arguments[i + 3] == ' '))
+			return true;
+		else if((arguments[i] == ' ') && (arguments[i + 1] == '|') && (arguments[i + 2] == ' '))
+			return true;
 	}
 	return false;
 }
