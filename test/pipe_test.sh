@@ -7,8 +7,8 @@ str="$ cat < test/test.txt | tr A-Z a-z | tee test/output2.txt | tr a-z A-Z > te
 
 echo ${str}
 {
-  echo ${str}
-	sleep 1
+    echo ${str}
+    sleep 1
 } | ./test
 
 rm test
