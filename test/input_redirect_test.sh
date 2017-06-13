@@ -2,13 +2,13 @@
 
 g++ -Wall -Werror -ansi -pedantic ../src/main.c -o test
 
-echo "precedence_test:"
+echo "input_redirect_test:"
+str="cat < test/test.txt && exit"
 
-str="echo A && echo B || echo C && echo D; exit"
 echo ${str}
 {
-	echo ${str}
-	sleep 1
+     echo ${str}
+     sleep 1
 } | ./test
 
 rm test
